@@ -3,7 +3,7 @@
 Plugin Name: Email protector
 Plugin URI: https://pixeline.be
 Description: Write email addresses in your pages/posts without worrying about spambots and email harvesters.
-Version: 1.3.2
+Version: 1.3.3
 Author: pixeline
 Author URI: https://pixeline.be
 */
@@ -41,7 +41,7 @@ if (!class_exists('WP_Email_Protector')) {
 
 			//"Constants" setup
 			$this->pluginId = 'email-protector';
-			$this->pluginVersion = '1.3.2';
+			$this->pluginVersion = '1.3.3';
 			$this->url = plugins_url(basename(__FILE__), __FILE__);
 			$this->urlpath = plugins_url('', __FILE__);
 
@@ -173,7 +173,7 @@ if (!class_exists('WP_Email_Protector')) {
 				echo '<div class="updated"><p>', _('Success! Your changes were sucessfully saved!'), '</p></div>';
 			}
 			
-			require 'admin.ui.php';
+			include 'admin.ui.php';
 		}
 	} //End Class
 } //End if class exists statement
