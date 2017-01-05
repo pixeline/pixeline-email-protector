@@ -6,8 +6,7 @@
  ?>
 			</p>
 
-			<h2 style="border-top:1px solid #999;padding-top:1em;"><?php _e('Settings', 'pxln_email_protector');?></h2>
-<h3><?php _e('What does it do?');?></h3>
+			<h2 style="border-top:1px solid #999;padding-top:1em;"><?php _e('What does it do?');?></h2>
     <p><?php _e('This plugin replaces any email address found in posts, pages, comments and excerpts, and replace them by a bit of html markup that will deceive most - if not all - email harvesters.');?></p>
     <p><?php _e('Additionally, if javascript is available on the clientside, the markup will be turned into a clickable email link (mailto:), so there will be no loss of usability for your legitimate users.');?></p>
 
