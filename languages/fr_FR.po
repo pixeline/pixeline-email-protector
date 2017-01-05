@@ -1,0 +1,224 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Email protector\n"
+"POT-Creation-Date: 2017-01-05 22:35+0100\n"
+"PO-Revision-Date: 2017-01-05 22:44+0100\n"
+"Last-Translator: Alexandre Plennevaux <alexandre@pixeline.be>\n"
+"Language-Team: Alexandre Plennevaux <alexandre@pixeline.be>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 1.8.11\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-WPHeader: pixeline-email-protector.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: admin.ui.php:3
+msgid "by "
+msgstr "par"
+
+#: admin.ui.php:5
+#, php-format
+msgid ""
+"If you like this plugin, please  %s give it a good rating %s on the "
+"Wordpress Plugins repository, and if you make any money out of it, %s send a "
+"few coins over to me %s."
+msgstr ""
+"Si vous aimez ce plugin, vous pouvez %s lui donner une bonne cote de %s sur "
+"le site des Extensions Wordpress, et si vous gagner de l’argent grâce à lui, "
+"vous pouvez %s me faire un petit don %s, ce serait sympa :)."
+
+#: admin.ui.php:9 pixeline-email-protector.php:157
+msgid "Settings"
+msgstr "Configuration"
+
+#: admin.ui.php:10
+msgid "What does it do?"
+msgstr "Que fait il?"
+
+#: admin.ui.php:11
+msgid ""
+"This plugin replaces any email address found in posts, pages, comments and "
+"excerpts, and replace them by a bit of html markup that will deceive most - "
+"if not all - email harvesters."
+msgstr ""
+"Ce plugin remplace n’importe quelle adresse de courriel trouvée dans les "
+"messages, les pages, les commentaires et les extraits et les remplace par un "
+"peu de html qui trompera la plupart - sinon tous - les logiciels de récolte "
+"d'emails (spambots)."
+
+#: admin.ui.php:12
+msgid ""
+"Additionally, if javascript is available on the clientside, the markup will "
+"be turned into a clickable email link (mailto:), so there will be no loss of "
+"usability for your legitimate users."
+msgstr ""
+"En outre, si javascript est disponible sur le côté client, le balisage sera "
+"transformé en un lien cliquable (mailto :), il n’y aura donc aucune perte de "
+"convivialité pour les utilisateurs légitimes."
+
+#: admin.ui.php:14
+msgid "Example: let's imagine you've written in your post: "
+msgstr "Exemple : imaginons que vous avez écrit dans votre message :"
+
+#: admin.ui.php:14
+msgid ""
+"This email address could be spotted and used by spambots. This plugin will "
+"automatically convert it to"
+msgstr ""
+"Cette adresse e-mail pourrait être repérée et utilisée par les robots des "
+"spammeurs. Ce plugin permet de convertir automatiquement à"
+
+#: admin.ui.php:17
+msgid "Controlling the \"visible\" part of the email link"
+msgstr "Contrôler la partie « visible » du lien e-mail"
+
+#: admin.ui.php:18
+msgid ""
+"You can optionally set the visible text in the email link, by simply adding "
+"it in a parenthesis right next to the email. Like this:"
+msgstr ""
+"Vous pouvez éventuellement définir du texte visible dans le lien par "
+"courriel, en l’ajoutant simplement  dans une parenthèse accolée à l’e-mail. "
+"Ainsi :"
+
+#: admin.ui.php:19
+msgid "Example: say you wrote in your post: "
+msgstr "Exemple : imaginons que vous avez écrit dans votre message :"
+
+#: admin.ui.php:19
+msgid "It will be automatically converted to"
+msgstr "Il sera automatiquement converti en"
+
+#: admin.ui.php:21
+msgid "The javascript will then turn this markup into:"
+msgstr "Le code javascript transformera ensuite ce balisage en :"
+
+#: admin.ui.php:23
+msgid "Configuration"
+msgstr "Configuration"
+
+#: admin.ui.php:30
+msgid ""
+"You may wish to customize the text to put inside the parenthesis and "
+"substitute the @ sign with:"
+msgstr ""
+"Vous pouvez personnaliser le texte mis à l’intérieur de la parenthèse et le "
+"remplacer le signe @ par  :"
+
+#: admin.ui.php:38
+msgid "Save Changes"
+msgstr "Sauvegarder les modifications"
+
+#: admin.ui.php:42
+msgid "Usage"
+msgstr "Utilisation"
+
+#: admin.ui.php:43
+msgid "In a post, page, comment or widget"
+msgstr "Dans un post, page, commentaire ou un widget"
+
+#: admin.ui.php:44
+msgid ""
+"Simply write the plain email address in your post, as if spambots never "
+"existed!"
+msgstr ""
+"Il vous suffit d’écrire l’adresse de courrier électronique ordinaire dans "
+"votre post, comme si les robots des spammeurs n’existaient pas."
+
+#: admin.ui.php:46
+msgid "In your theme"
+msgstr "Dans votre thème"
+
+#: admin.ui.php:47
+msgid "You can use the function "
+msgstr "Vous pouvez utiliser la fonction "
+
+#: admin.ui.php:48
+msgid "Example:"
+msgstr "Exemple :"
+
+#: admin.ui.php:52
+msgid "Help & support"
+msgstr "Aide & Support"
+
+#: admin.ui.php:53
+msgid "Post your questions / bugs on "
+msgstr "Posez vos questions / bugs sur"
+
+#: admin.ui.php:53
+msgid "the Wordpress forum dedicated plugin page"
+msgstr "sur la page dédiée à l'extension sur WordPress.org"
+
+#: admin.ui.php:55
+msgid "Sustain the work"
+msgstr "Soutenir le travail"
+
+#: admin.ui.php:56
+msgid ""
+"This plugin saves your emails from spambots. Why not show your gratitude by "
+"giving just a few coins to the maker of this plugin ?"
+msgstr ""
+"Ce plugin permet de protéger vos emails des spammeurs. Pourquoi ne pas "
+"montrer votre gratitude en donnant quelques pièces de monnaie à l’auteur de "
+"ce plugin ?"
+
+#: pixeline-email-protector.php:173
+msgid "Success! Your changes were sucessfully saved!"
+msgstr "Vos modifications ont bien été prises en compte."
+
+#. Plugin Name of the plugin/theme
+msgid "Email protector"
+msgstr "Email Protector (Protecteur de courriel)"
+
+#. Plugin URI of the plugin/theme
+#. Author URI of the plugin/theme
+msgid "https://pixeline.be"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Write email addresses in your pages/posts without worrying about spambots "
+"and email harvesters."
+msgstr ""
+"Publier des adresses email sur votre site sans vous soucier des spammers."
+
+#. Author of the plugin/theme
+msgid "pixeline"
+msgstr "Pixeline"
+
+#~ msgid "Email Protector"
+#~ msgstr "Email Protector"
+
+#~ msgid ""
+#~ "by <a href=\"https://www.pixeline.be\" target=\"_blank\" class=\"external"
+#~ "\">pixeline</a>"
+#~ msgstr ""
+#~ "par <a href=\"https://www.pixeline.be\" target=\"_blank\" class=\"external"
+#~ "\">pixeline</a>"
+
+#~ msgid ""
+#~ "If you like this plugin, please <a href=\"http://wordpress.org/extend/"
+#~ "plugins/pixelines-email-protector/\" target=\"_blank\">give it a good "
+#~ "rating</a> on the Wordpress Plugins repository, and if you make any money "
+#~ "out of it, <a title=\"Paypal donation page\" target=\"_blank\" href="
+#~ "\"https://www.paypal.com/cgi-bin/webscr?"
+#~ "cmd=_donations&business=J9X5B6JUVPBHN&lc=US&item_name=pixeline%20%2d"
+#~ "%20Wordpress%20plugin&currency_code=EUR&bn=PP%2dDonationsBF"
+#~ "%3abtn_donate_SM%2egif%3aNonHostedGuest\">send a few coins over to me</a>!"
+#~ msgstr ""
+#~ "Si cette extension vous a aidé, merci de lui donner une bonne note sur "
+#~ "WordPress, le rendant plus facile à trouver aux autres utilisateurs. Si "
+#~ "vous gagnez de l'argent grâce notamment à mon travail, vous pouvez "
+#~ "également <a title=\"Paypal donation page\" target=\"_blank\" href="
+#~ "\"https://www.paypal.com/cgi-bin/webscr?"
+#~ "cmd=_donations&business=J9X5B6JUVPBHN&lc=US&item_name=pixeline%20%2d"
+#~ "%20Wordpress%20plugin&currency_code=EUR&bn=PP%2dDonationsBF"
+#~ "%3abtn_donate_SM%2egif%3aNonHostedGuest\">me faire un don</a>."
