@@ -5,7 +5,7 @@ Plugin URI: https://pixeline.be/downloads/email-protector-plugin-for-wordpress-4
 Tags: spam, email, address, harvest, obfuscate, protection, email protection, antispam, emailaddress, encode, encrypt, link, mailto, obfuscate, protect, spambot
 Requires at least: 2.7
 Tested up to: 4.7.1
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 
 Write email addresses without worrying about spambots and email harvesters.
 
