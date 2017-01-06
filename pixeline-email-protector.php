@@ -3,7 +3,7 @@
 Plugin Name: Email protector
 Plugin URI: https://pixeline.be
 Description: Write email addresses in your pages/posts without worrying about spambots and email harvesters.
-Version: 1.3.4
+Version: 1.3.5
 Author: pixeline
 Author URI: https://pixeline.be
 */
@@ -41,7 +41,7 @@ if (!class_exists('WP_Email_Protector')) {
 
 			//"Constants" setup
 			$this->pluginId = 'email-protector';
-			$this->pluginVersion = '1.3.4';
+			$this->pluginVersion = '1.3.5';
 			$this->url = plugins_url(basename(__FILE__), __FILE__);
 			$this->urlpath = plugins_url('', __FILE__);
 
@@ -141,12 +141,12 @@ if (!class_exists('WP_Email_Protector')) {
 			return update_option($this->optionsName, $this->options);
 		}
 
-		/**
+		/** 
 		 * @desc Adds the options subpanel
 		 */
 		function admin_menu_link() {
 			add_options_page('Email protector', 'Email protector', 10, basename(__FILE__), array(&$this, 'admin_options_page'));
-			add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array(&$this, 'filter_plugin_actions'), 10, 2 );
+			add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array( &$this, 'filter_plugin_actions'), 10, 2 );
 		}
 
 
@@ -154,7 +154,7 @@ if (!class_exists('WP_Email_Protector')) {
 		 * @desc Adds the Settings link to the plugin activate/deactivate page
 		 */
 		function filter_plugin_actions($links, $file) {
-			$settings_link = '<a href="options-general.php?page=' . basename(__FILE__) . '">' . __('Settings') . '</a>';
+			$settings_link = '<a href="options-general.php?page=' . basename(__FILE__) . '">' . __('Settings', 'pxln_email_protector') . '</a>';
 			array_unshift( $links, $settings_link ); // before other links
 
 			return $links;
@@ -170,7 +170,7 @@ if (!class_exists('WP_Email_Protector')) {
 
 				$this->saveAdminOptions();
 
-				echo '<div class="updated"><p>', _('Success! Your changes were sucessfully saved!'), '</p></div>';
+				echo '<div class="updated"><p>'. __('Success! Your changes were sucessfully saved!', 'pxln_email_protector'), '</p></div>';
 			}
 			
 			include 'admin.ui.php';

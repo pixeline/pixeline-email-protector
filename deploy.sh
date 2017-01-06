@@ -82,15 +82,28 @@ echo "Ignoring github specific files and deployment script"
 svn propset svn:ignore "deploy.sh
 README.md
 .git
-assets
-deploy-instructions.md
 .gitignore" "$SVNPATH/trunk/"
+
+
+echo "Moving assets-wp-repo"
+mkdir $SVNPATH/assets/
+mv $SVNPATH/trunk/assets-wp-repo/* $SVNPATH/assets/
+svn add $SVNPATH/assets/
+svn delete $SVNPATH/trunk/assets-wp-repo
+
 
 echo "Changing directory to SVN and committing to trunk"
 cd $SVNPATH/trunk/
 # Add all new files that are not set to be ignored
 svn status | grep -v "^.[ \t]*\..*" | grep "^?" | awk '{print $2}' | xargs svn add
+
+echo "committing to trunk"
 svn commit --username=$SVNUSER -m "$COMMITMSG"
+
+echo "Updating WP plugin repo assets & committing"
+cd $SVNPATH/assets/
+svn commit --username=$SVNUSER -m "Updating wp-repo-assets"
+
 
 echo "Creating new SVN tag & committing it"
 cd $SVNPATH
