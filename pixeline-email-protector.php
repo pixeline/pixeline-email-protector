@@ -22,6 +22,11 @@ if (!class_exists('WP_Email_Protector')) {
 		var $options = array();
 
 		/**
+		 * @var string $localizationDomain Domain used for localization
+		 */
+		var $localizationDomain = "p_email_protector";
+
+		/**
 		 * @var string $url The url to this plugin
 		 */
 		var $url = '';
@@ -77,7 +82,8 @@ if (!class_exists('WP_Email_Protector')) {
 
 			$r = '`\<a([^>]+)href\=\"mailto\:([^">]+)\"([^>]*)\>(.*?)\<\/a\>`ism';
 			preg_match_all($r, $content, $addresses, PREG_SET_ORDER);
-			$the_addrs = $addresses[0];
+			$the_addrs = isset($addresses[0]) ? $addresses[0] : array();
+			$repaddr = array();
 			for ($a = 0; $a < count($the_addrs); $a++) {
 				$repaddr[$a] = preg_replace($r, '$2', $the_addrs[$a]);
 			}
@@ -92,9 +98,10 @@ if (!class_exists('WP_Email_Protector')) {
 			// ----------------------------------------------------------------------
 			// MAIN FUNCTION: replaces any email address by its harvest-proof counterpart.
 			// ----------------------------------------------------------------------
-			$addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,4})(\((.+?)\))?/i';
+			$addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i';
 			preg_match_all($addr_pattern, $content, $addresses);
 			$the_addrs = $addresses[0];
+			$repaddr = array();
 			for ($a = 0; $a < count($the_addrs); $a++) {
 				$repaddr[$a] = preg_replace($addr_pattern, '<span title="$5" class="pep-email">$1(' . $this->options['pep_email_substitution_string'] . ')$2.$3</span>', $the_addrs[$a]);
 			}
@@ -108,9 +115,10 @@ if (!class_exists('WP_Email_Protector')) {
 			// ----------------------------------------------------------------------
 			// SECUNDARY FUNCTION: replaces any email address by its harvest-proof counterpart in the POST EXCERPT.
 			// ----------------------------------------------------------------------
-			$addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,4})(\((.+?)\))?/i';
+			$addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i';
 			preg_match_all($addr_pattern, $content, $addresses);
 			$the_addrs = $addresses[0];
+			$repaddr = array();
 			for ($a = 0; $a < count($the_addrs); $a++) {
 				if (count($the_addrs[$a]) == 4)
 					$repaddr[$a] = preg_replace($addr_pattern, '$5', $the_addrs[$a]);
