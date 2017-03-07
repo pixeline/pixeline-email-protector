@@ -51,6 +51,8 @@ Github repo: https://github.com/pixeline/pixeline-email-protector
 
 == Changelog ==
 
+= 1.3.7 = Enhancement: now filters the Text Widget content.
+
 = 1.3.6 = mild fixes.
 
 = 1.3.3 =
