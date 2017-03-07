@@ -1,8 +1,8 @@
 <div class="wrap">
 	<h1>Email Protector</h1>
-	<p><?php _e('by ', 'pxln_email_protector'); ?> <a href="https://www.pixeline.be" target="_blank" class="external">pixeline</a></p>
+	<p><?php _e('by ', 'pxln_email_protector'); ?> <a href="https://pixeline.be" target="_blank" class="external">pixeline</a></p>
 	<p style="font-weight:bold;">
-	<?php printf( __( 'If you like this plugin, please  %s give it a good rating %s on the Wordpress Plugins repository, and if you make any money out of it, %s send a few coins over to me %s.', 'pxln_email_protector' ), '<a href="http://wordpress.org/extend/plugins/pixelines-email-protector/" target="_blank">', '</a>', '<a title="Paypal donation page" target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=J9X5B6JUVPBHN&lc=US&item_name=pixeline%20%2d%20Wordpress%20plugin&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHostedGuest">', '</a>' );
+	<?php printf( __( 'If you like this plugin, please  %s give it a good rating %s on the Wordpress Plugins repository, and if you make any money out of it, %s send a few coins over to its author %s.', 'pxln_email_protector' ), '<a href="http://wordpress.org/extend/plugins/pixelines-email-protector/" target="_blank">', '</a>', '<a title="Paypal donation page" target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=J9X5B6JUVPBHN&lc=US&item_name=pixeline%20%2d%20Wordpress%20plugin&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHostedGuest">', '</a>' );
 ?>
 	</p>
 
