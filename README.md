@@ -60,7 +60,7 @@ If you need to protect emails inside your Theme's files (like the footer.php for
 
 
 ### 1.2.6 
-- Fix bug occurring when there are similar addresses, one being a substring of the other. Thank you, @mkranz ( https://wordpress.org/support/profile/mkranz )
+- Fix bug occurring when there are similar addresses, one being a substring of the other. Thank you, [@mkranz](https://wordpress.org/support/profile/mkranz)
 
 
 ### 1.2.5 
