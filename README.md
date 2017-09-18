@@ -1,7 +1,7 @@
 # Pixeline's Email Protector 
 **Contributors:** pixeline  
 **Donate link:** http://goo.gl/7L2ua  
-Plugin URI: https://pixeline.be/downloads/email-protector-plugin-for-wordpress-450.html
+Plugin URI: https://pixeline.be/downloads/email-protector-plugin-for-wordpress-450.html  
 **Tags:** spam, email, address, harvest, obfuscate, protection, email protection, antispam, emailaddress, encode, encrypt, link, mailto, obfuscate, protect, spambot  
 **Requires at least:** 2.7  
 **Tested up to:** 4.6  
