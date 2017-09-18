@@ -7,7 +7,7 @@ Plugin URI: https://pixeline.be/downloads/email-protector-plugin-for-wordpress-4
 **Tested up to:** 4.6  
 **Stable tag:** trunk  
 
-Write email addresses without worrying about spambots and email harvesters.
+A WordPress plugin that lets your users write plain email addresses without worrying about spambots and email harvesters.
 
 
 ## Description 
