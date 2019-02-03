@@ -52,6 +52,9 @@ If you need to protect emails inside your Theme's files (like the footer.php for
 
 ## Changelog 
 
+###1.3.1
+- fix edge cases 
+- adapt to WordPress latest stable
 
 ### 1.3.0 
 - Extensive rewrite.
