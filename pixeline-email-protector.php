@@ -18,6 +18,7 @@ if (!class_exists('WP_Email_Protector')) {
         protected $pluginVersion;
         const VERSION = '1.4.0';
         protected $pluginId;
+        public $parser;
         /**
          * @var array $options Stores the options for this plugin
          */
@@ -51,6 +52,7 @@ if (!class_exists('WP_Email_Protector')) {
             $this->pluginVersion = self::VERSION;
             $this->url = plugins_url(basename(__FILE__), __FILE__);
             $this->urlpath = plugins_url('', __FILE__);
+            $this->parser = new Parser();
 
             //Initialize the options
             $this->getOptions();
@@ -58,7 +60,6 @@ if (!class_exists('WP_Email_Protector')) {
             //Actions
             if (is_admin()) {
                 add_action('admin_menu', array(&$this, "admin_menu_link"));
-
             } else {
                 add_filter('comment_text', array($this, "email_protect"));
                 add_filter('the_content', array($this, "email_protect"));
@@ -80,46 +81,20 @@ if (!class_exists('WP_Email_Protector')) {
             wp_enqueue_script('pxln-email-protector', $this->urlpath . '/pixeline-email-protector.js', array(), $this->pluginVersion, true);
         }
 
-        public function removeHyperLink($content)
-        {
-
-            // Removes <a href="mailto:" links sometimes added via copy/pasting into the visual editor
-
-            $r = '`\<a([^>]+)href\=\"mailto\:([^">]+)\"([^>]*)\>(.*?)\<\/a\>`ism';
-            preg_match_all($r, $content, $addresses, PREG_SET_ORDER);
-            $the_addrs = isset($addresses[0]) ? $addresses[0] : array();
-            $repaddr = array();
-            for ($a = 0; $a < count($the_addrs); $a++) {
-                $repaddr[$a] = preg_replace($r, '$2', $the_addrs[$a]);
-            }
-            $cc = str_replace($the_addrs, $repaddr, $content);
-            return $cc;
-
-        }
-
         public function email_protect($content)
         {
-            $content = $this->removeHyperLink($content);
-            // ----------------------------------------------------------------------
-            // MAIN FUNCTION: replaces any email address by its harvest-proof counterpart.
-            // ----------------------------------------------------------------------
-            $addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i';
-            preg_match_all($addr_pattern, $content, $addresses);
-            $the_addrs = $addresses[0];
-            $repaddr = array();
-            for ($a = 0; $a < count($the_addrs); $a++) {
-                $repaddr[$a] = preg_replace($addr_pattern, '<span title="$5" class="pep-email">$1(' . $this->options['pep_email_substitution_string'] . ')$2.$3</span>', $the_addrs[$a]);
-            }
-            $cc = str_replace($the_addrs, $repaddr, $content);
-            return $cc;
+            $content = $this->parser->removeHyperLink($content);
+            return $this->parser->replace_email_with_obfuscation($content, true);
         }
 
         public function email_protect_excerpt($content)
         {
-            $content = $this->removeHyperLink($content);
             // ----------------------------------------------------------------------
             // SECUNDARY FUNCTION: replaces any email address by its harvest-proof counterpart in the POST EXCERPT.
             // ----------------------------------------------------------------------
+            $content = $this->parser->removeHyperLink($content);
+            return $this->parser->replace_email_with_obfuscation($content, false);
+
             $addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i';
             preg_match_all($addr_pattern, $content, $addresses);
             $the_addrs = $addresses[0];
