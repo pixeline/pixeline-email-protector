@@ -21,13 +21,22 @@ class ParserTest extends TestCase
     public function testRremoveHyperLink(): void
     {
         $use_cases = array(
-            ['answer' => 'user@example.com', 'try' => '<a href="mailto:user@example.com">user@example.com</a>'],
-            ['answer' => 'user@sub.example.com', 'try' => '<a href="mailto:user@sub.example.com">user@sub.example.com</a>'],
+            ['email' => 'user@example.com', 'html_string' => '<a href="mailto:user@example.com">user@example.com</a>'],
+            ['email' => 'user@sub.example.com', 'html_string' => '<a href="mailto:user@sub.example.com">user@sub.example.com</a>'],
+            ['email' => 'foo@bar.co', 'html_string' => '<a href="mailto:foo@bar.co">foo@bar.co</a>'],
+            ['email' => 'foo@bar.com', 'html_string' => '<a href="mailto:foo@bar.com">foo@bar.com</a>'],
+            ['email' => 'foobar@foo.com', 'html_string' => '<a href="mailto:foobar@foo.com">foobar@foo.com</a>'],
+            ['email' => 'bar@foo.co', 'html_string' => '<a href="mailto:bar@foo.co">bar@foo.co</a>'],
+            ['email' => 'president@our.org', 'html_string' => '<a href="mailto:president@our.org">president@our.org</a>'],
+            ['email' => 'vicepresident@our.co.uk', 'html_string' => '<a href="mailto:vicepresident@our.co.uk">vicepresident@our.co.uk</a>'],
+            ['email' => '15characterlong@address.test', 'html_string' => '<a title="This is a great title, man!" href="mailto:15characterlong@address.test" rel="noopener">15characterlong@address.test</a>'],
+            ['email' => '<strong>Year 4J:</strong> Georgina Tate (Celia) georgina.tate@googlemail.com', 'html_string' => '<strong>Year 4J:</strong> Georgina Tate (Celia) <a href="mailto:georgina.tate@googlemail.com">georgina.tate@googlemail.com</a>'],
+            ['email' => ' / Fiona Dashwood (Oliver) fionajpalmer fionajpalmer@yahoo.com / Patrick Dor (William) patrickdor@yahoo.co.uk', 'html_string' => ' / Fiona Dashwood (Oliver) fionajpalmer <a href="mailto:fionajpalmer@yahoo.com">fionajpalmer@yahoo.com</a> / Patrick Dor (William) <a href="mailto:patrickdor@yahoo.co.uk">patrickdor@yahoo.co.uk</a>'],
         );
         foreach ($use_cases as $test) {
             $this->assertEquals(
-                $test['answer'],
-                Parser::removeHyperLink($test['try'])
+                $test['email'],
+                Parser::removeHyperLink($test['html_string'])
             );
         }
 
