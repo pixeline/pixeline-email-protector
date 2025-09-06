@@ -6,6 +6,8 @@ Description: Obfuscate any email address published on the public face of a wordp
 Version: 1.4.0
 Author: pixeline
 Author URI: https://pixeline.be
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 if (!defined('EMAIL_PROTECTOR_VERSION')) {
