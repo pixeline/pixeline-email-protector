@@ -3,7 +3,7 @@
 Plugin Name: Email protector
 Plugin URI: https://pixeline.be
 Description: Obfuscate any email address published on the public face of a wordpress website, protecting them against spambots and email harvesters.
-Version: 1.4.2
+Version: 1.4.3
 Author: pixeline
 Author URI: https://pixeline.be
 License: GPLv2 or later
@@ -11,7 +11,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 if (!defined('EMAIL_PROTECTOR_VERSION')) {
-	define('EMAIL_PROTECTOR_VERSION', '1.4.1');
+	define('EMAIL_PROTECTOR_VERSION', '1.4.3');
 }
 
 if (!class_exists('WP_Email_Protector')) {
@@ -31,7 +31,7 @@ if (!class_exists('WP_Email_Protector')) {
 		/**
 		 * @var string $localizationDomain Domain used for localization
 		 */
-		var $localizationDomain = "p_email_protector";
+		var $localizationDomain = "pxln_email_protector";
 
 		/**
 		 * @var string $url The url to this plugin
@@ -130,17 +130,42 @@ if (!class_exists('WP_Email_Protector')) {
 		 */
 		function pep_replace_text_nodes($content, $replace_cb)
 		{
+			$email_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i';
+
 			if (!function_exists('wp_html_split')) {
-				return preg_replace_callback('/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i', $replace_cb, $content);
+				$chunks = preg_split('/(<[^>]+>)/', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+			} else {
+				$chunks = wp_html_split($content);
 			}
 
-			$chunks = wp_html_split($content);
+			$excluded_tags = array('script', 'style', 'noscript', 'textarea', 'code', 'pre');
+			$excluded_depth = 0;
+
 			foreach ($chunks as $index => $chunk) {
-				if ($chunk === '' || $chunk[0] === '<') {
+				if ($chunk === '') {
 					continue;
 				}
 
-				$chunks[$index] = preg_replace_callback('/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i', $replace_cb, $chunk);
+				if ($chunk[0] === '<') {
+					if (preg_match('~^<\s*/\s*([a-z0-9:-]+)\b~i', $chunk, $matches)) {
+						$tag_name = strtolower($matches[1]);
+						if (in_array($tag_name, $excluded_tags, true) && $excluded_depth > 0) {
+							$excluded_depth--;
+						}
+					} elseif (preg_match('~^<\s*([a-z0-9:-]+)\b~i', $chunk, $matches)) {
+						$tag_name = strtolower($matches[1]);
+						if (in_array($tag_name, $excluded_tags, true) && !preg_match('~/\s*>$~', $chunk)) {
+							$excluded_depth++;
+						}
+					}
+					continue;
+				}
+
+				if ($excluded_depth > 0) {
+					continue;
+				}
+
+				$chunks[$index] = preg_replace_callback($email_pattern, $replace_cb, $chunk);
 			}
 
 			return implode('', $chunks);
@@ -224,7 +249,7 @@ if (!class_exists('WP_Email_Protector')) {
 		 */
 		function admin_menu_link()
 		{
-			add_options_page('Email protector', 'Email protector', 'manage_options', basename(__FILE__), array(&$this, 'admin_options_page'));
+			add_options_page(__('Email Protector', 'pxln_email_protector'), __('Email Protector', 'pxln_email_protector'), 'manage_options', basename(__FILE__), array(&$this, 'admin_options_page'));
 			add_filter('plugin_action_links_' . plugin_basename(__FILE__), array(&$this, 'filter_plugin_actions'), 10, 2);
 		}
 

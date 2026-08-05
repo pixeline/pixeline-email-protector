@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/pixelines-email-protector/
 Tags: email, spam, antispam, obfuscate, mailto
 Requires at least: 2.7
 Tested up to: 7.0.2
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -18,7 +18,7 @@ This plugin provides an unobtrusive yet efficient protection against email harve
 
 Post/page authors may write email addresses in their article in the usual format ("john@doe.com") without exposing them to spam email harvesters. The plugin takes care of the obfuscation, implementing a graceful degradation technique focusing on usability so as to protect your email addresses from harvesters while keeping them usable to your human visitors.
 
-The plugin replaces any email address found in posts, pages, comments and excerpts, and replace them by a bit of html markup that should deceive most email harvesters: `<span class="email">john(replace the parenthesis by @)doe.com</span>`.
+The plugin replaces any email address found in posts, pages, comments and excerpts, and replace them by a bit of html markup that should deceive most email harvesters: `<span class="pep-email">john(replace the parenthesis by @)doe.com</span>`.
 If javascript is available, it will display a clickable link and display the original email to the human user. Maximum usability, maximum protection.
 
 <strong>Please <a href="http://wordpress.org/extend/plugins/pixelines-email-protector/">rate the plugin</a> if you like it.</strong>
@@ -28,7 +28,7 @@ If javascript is available, it will display a clickable link and display the ori
 1. Unzip the file into your wp-content/plugins directory.
 2. In your wp-admin screen, activate the plugin. That's it, your emails are now safe!
 
-Additionally, there is a Settings screen (Email Protector) allowing you  you to customize the text that is displayed as a replacement to the email address.
+Additionally, there is a Settings screen (Email Protector) allowing you to customize the text that is displayed as a replacement to the email address.
 
 == Usage ==
 
@@ -48,11 +48,39 @@ If you need to protect emails inside your Theme's files (like the footer.php for
 
 ` echo safe_email('you@domain.com'); `
 
+= Theme-safe alternative (plugin can be disabled) =
+If your theme must keep working even when this plugin is disabled, use a wrapper in your theme (for example in functions.php) and call that wrapper everywhere instead of calling `safe_email()` directly.
+
+`if ( ! function_exists( 'theme_safe_email' ) ) {
+	function theme_safe_email( $email, $label = '' ) {
+		$email = sanitize_email( $email );
+		if ( '' === $email ) {
+			return '';
+		}
+
+		if ( function_exists( 'safe_email' ) ) {
+			$payload = $email . ( '' !== $label ? '(' . $label . ')' : '' );
+			return safe_email( $payload );
+		}
+
+		$encoded_email = antispambot( $email );
+		$link_label = '' !== $label ? $label : $encoded_email;
+		return '<a href="mailto:' . esc_attr( $encoded_email ) . '">' . esc_html( $link_label ) . '</a>';
+	}
+}`
+
 == Contribute ==
 
 Github repo: https://github.com/pixeline/pixeline-email-protector
 
 == Changelog ==
+= 1.4.3 =
+- Fix: avoid replacing email-like strings inside script/style/noscript/textarea/code/pre blocks.
+- Fix: keep plugin version constant in sync with plugin header.
+- i18n: normalize remaining admin strings to the plugin text domain.
+- Docs: add a theme-safe wrapper pattern that works even if this plugin is disabled.
+- DevOps: deploy script now stages untracked files before committing.
+
 = 1.4.2 =
 - chore: Update "Tested up to" to 7.0.2.
 - Fix: update Donation link (https://ko-fi.com/pixeline_be)

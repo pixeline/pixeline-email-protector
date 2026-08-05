@@ -80,7 +80,8 @@ echo -e "Enter a commit message for this new version: \c"
 read COMMITMSG
 
 if [ -n "$(git status --porcelain)" ]; then
-	git commit -am "$COMMITMSG"
+	git add -A
+	git commit -m "$COMMITMSG"
 else
 	echo "No local changes to commit. Skipping git commit."
 fi
