@@ -133,7 +133,10 @@ fi
 echo "Changing directory to SVN and committing to trunk"
 cd "$SVNPATH"/trunk/
 # Add all new files that are not set to be ignored
-svn status | grep -v "^.[ \t]*\..*" | grep "^?" | awk '{print $2}' | xargs svn add
+while IFS= read -r file_path; do
+	[ -n "$file_path" ] || continue
+	svn add "$file_path"
+done < <(svn status | awk '/^\?/ && $2 !~ /^\./ {print $2}')
 
 if ! svn ls | grep -q '^readme\.txt$'; then
 	echo "SVN trunk is missing readme.txt after export/add. Exiting...."
@@ -145,7 +148,11 @@ svn commit --username=$SVNUSER -m "$COMMITMSG"
 
 echo "Updating WP plugin repo assets & committing"
 cd "$SVNPATH"/assets/
-svn commit --username=$SVNUSER -m "Updating wp-repo-assets"
+if svn status | grep -q .; then
+	svn commit --username=$SVNUSER -m "Updating wp-repo-assets"
+else
+	echo "No asset changes to commit. Skipping assets commit."
+fi
 
 echo "Creating new SVN tag & committing it"
 cd "$SVNPATH"
