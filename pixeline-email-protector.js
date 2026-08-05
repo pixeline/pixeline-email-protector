@@ -3,7 +3,7 @@ if (typeof pxln_emails !== 'undefined') {
     for (var i = 0; i < pxln_emails.length; ++i) {
         var source = pxln_emails[i];
         var peptitle = source.getAttribute('title') || '';
-        var pepemail = (source.textContent || '').replace(/\s*\(.+\)\s*/, '@');
+        var pepemail = (source.textContent || '').replace(/\([^)]*\)/, '@').replace(/\s+/g, '');
         if (peptitle === '') { peptitle = pepemail; }
         var link = document.createElement('a');
         link.className = 'pep-email';
