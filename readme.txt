@@ -1,11 +1,11 @@
 === Pixeline's Email Protector ===
 Contributors: pixeline
-Donate link: http://goo.gl/7L2ua
-Plugin URI: https://pixeline.be/downloads/email-protector-plugin-for-wordpress-450.html
+Donate link: https://ko-fi.com/pixeline_be
+Plugin URI: https://wordpress.org/plugins/pixelines-email-protector/
 Tags: email, spam, antispam, obfuscate, mailto
 Requires at least: 2.7
-Tested up to: 6.8.2
-Stable tag: 1.4.1
+Tested up to: 7.0.2
+Stable tag: 1.4.2
 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -14,7 +14,7 @@ Write email addresses without worrying about spambots and email harvesters.
 
 == Description ==
 
-This plugin provides an unobtrusive yet efficient protection against email harvesters / spambots. Here is a [demo](https://pixeline.be/blog/email-protector-demo-4258.html).
+This plugin provides an unobtrusive yet efficient protection against email harvesters / spambots.
 
 Post/page authors may write email addresses in their article in the usual format ("john@doe.com") without exposing them to spam email harvesters. The plugin takes care of the obfuscation, implementing a graceful degradation technique focusing on usability so as to protect your email addresses from harvesters while keeping them usable to your human visitors.
 
@@ -53,7 +53,9 @@ If you need to protect emails inside your Theme's files (like the footer.php for
 Github repo: https://github.com/pixeline/pixeline-email-protector
 
 == Changelog ==
-
+= 1.4.2 =
+- chore: Update "Tested up to" to 7.0.2.
+- Fix: update Donation link (https://ko-fi.com/pixeline_be)
 = 1.4.1 =
 - Fix: Prevent invalid HTML by replacing emails only in text nodes (never in tag attributes).
 - Fix: Improve mailto anchor cleanup to support single quotes, spacing variants, and uppercase attribute names.

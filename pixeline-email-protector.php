@@ -3,7 +3,7 @@
 Plugin Name: Email protector
 Plugin URI: https://pixeline.be
 Description: Obfuscate any email address published on the public face of a wordpress website, protecting them against spambots and email harvesters.
-Version: 1.4.1
+Version: 1.4.2
 Author: pixeline
 Author URI: https://pixeline.be
 License: GPLv2 or later

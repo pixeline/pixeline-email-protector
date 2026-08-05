@@ -2,7 +2,7 @@
 **Contributors:** pixeline
 **Tags:** spam, email, address, harvest, obfuscate, protection, email protection, antispam, emailaddress, encode, encrypt, link, mailto, obfuscate, protect, spambot
 **Requires at least:** 2.7
-**Tested up to:** 6.8.2
+**Tested up to:** 7.0.2
 **Stable tag:** trunk
 
 A WordPress plugin that lets your users write plain email addresses without worrying about spambots and email harvesters.

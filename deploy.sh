@@ -7,31 +7,31 @@ set -euo pipefail
 PLUGINSLUG="pixeline-email-protector"
 CURRENTDIR=`pwd`
 # this should be the name of your main php file in the wordpress plugin
-MAINFILE="pixeline-email-protector.php" 
+MAINFILE="pixeline-email-protector.php"
 
 
 # git config
 # this file should be in the base of your git repository
-GITPATH="$CURRENTDIR/" 
+GITPATH="$CURRENTDIR/"
 
 # svn config
 
 # path to a temp SVN repo. No trailing slash required and don't add trunk.
-SVNPATH="/tmp/$PLUGINSLUG" 
+SVNPATH="/tmp/$PLUGINSLUG"
 
 # Remote SVN repo on wordpress.org, with trailing slash
-SVNURL="https://plugins.svn.wordpress.org/$PLUGINSLUG/" 
+SVNURL="https://plugins.svn.wordpress.org/$PLUGINSLUG/"
 # your svn username
 SVNUSER="pixeline"
 
 
 # Let's begin...
 echo ".........................................."
-echo 
+echo
 echo "Preparing to deploy wordpress plugin"
-echo 
+echo
 echo ".........................................."
-echo 
+echo
 
 # Check if subversion is installed before getting all worked up
 if ! which svn >/dev/null; then
@@ -53,9 +53,9 @@ if [ "$NEWVERSION1" != "$NEWVERSION2" ]; then echo "Version in readme.txt & $MAI
 echo "Versions match in readme.txt and $MAINFILE. Let's proceed..."
 
 # if git show-ref --tags --quiet --verify -- "refs/tags/$NEWVERSION1"
-# 	then 
-# 		echo "Version $NEWVERSION1 already exists as git tag. Exiting...."; 
-# 		exit 1; 
+# 	then
+# 		echo "Version $NEWVERSION1 already exists as git tag. Exiting....";
+# 		exit 1;
 # 	else
 # 		echo "Git version does not exist. Let's proceed..."
 # fi
@@ -78,7 +78,7 @@ echo "Pushing latest commit to origin, with tags"
 git push origin master
 git push origin master --tags
 
-echo 
+echo
 echo "Creating local copy of SVN repo ..."
 svn co "$SVNURL" "$SVNPATH"
 
