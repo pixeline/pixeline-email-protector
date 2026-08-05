@@ -145,8 +145,8 @@ while IFS= read -r file_path; do
 	svn rm --force "$file_path"
 done < <(svn status | awk '/^!/ {print $2}')
 
-if ! svn ls | grep -q '^readme\.txt$'; then
-	echo "SVN trunk is missing readme.txt after export/add. Exiting...."
+if [ ! -f readme.txt ]; then
+	echo "SVN trunk working copy is missing readme.txt. Exiting...."
 	exit 1
 fi
 
@@ -171,8 +171,14 @@ echo "Creating new SVN tag & committing it"
 cd "$SVNPATH"
 svn copy trunk/ tags/$NEWVERSION1/
 
-if ! svn ls "$SVNPATH/tags/$NEWVERSION1" | grep -q '^readme\.txt$'; then
-	echo "Tag source is missing readme.txt. Exiting...."
+if [ ! -f "$SVNPATH/tags/$NEWVERSION1/readme.txt" ]; then
+	echo "Tag working copy is missing readme.txt. Exiting...."
+	exit 1
+fi
+
+tag_readme_status=$(svn status "$SVNPATH/tags/$NEWVERSION1/readme.txt" || true)
+if echo "$tag_readme_status" | grep -Eq '^[D!]'; then
+	echo "Tag readme.txt is scheduled for deletion or missing. Exiting...."
 	exit 1
 fi
 
