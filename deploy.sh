@@ -4,7 +4,7 @@
 set -euo pipefail
 
 # main config
-PLUGINSLUG="pixeline-email-protector"
+PLUGINSLUG="pixelines-email-protector"
 CURRENTDIR=`pwd`
 # this should be the name of your main php file in the wordpress plugin
 MAINFILE="pixeline-email-protector.php"
@@ -52,6 +52,15 @@ if [ "$NEWVERSION1" != "$NEWVERSION2" ]; then echo "Version in readme.txt & $MAI
 
 echo "Versions match in readme.txt and $MAINFILE. Let's proceed..."
 
+echo "Checking remote SVN repository exists..."
+if ! svn ls "$SVNURL" >/dev/null 2>&1; then
+	echo "SVN repository URL not found: $SVNURL"
+	echo "Please verify PLUGINSLUG and plugin ownership on WordPress.org. Exiting...."
+	exit 1
+fi
+
+echo "SVN repository found. Continuing..."
+
 # if git show-ref --tags --quiet --verify -- "refs/tags/$NEWVERSION1"
 # 	then
 # 		echo "Version $NEWVERSION1 already exists as git tag. Exiting....";
@@ -69,10 +78,19 @@ fi
 
 echo -e "Enter a commit message for this new version: \c"
 read COMMITMSG
-git commit -am "$COMMITMSG"
+
+if [ -n "$(git status --porcelain)" ]; then
+	git commit -am "$COMMITMSG"
+else
+	echo "No local changes to commit. Skipping git commit."
+fi
 
 echo "Tagging new version in git"
-git tag -a "$NEWVERSION1" -m "Tagging version $NEWVERSION1"
+if git rev-parse -q --verify "refs/tags/$NEWVERSION1" >/dev/null; then
+	echo "Git tag $NEWVERSION1 already exists. Skipping tag creation."
+else
+	git tag -a "$NEWVERSION1" -m "Tagging version $NEWVERSION1"
+fi
 
 echo "Pushing latest commit to origin, with tags"
 git push origin master
