@@ -1,8 +1,10 @@
 #! /bin/bash
 # A modification of Dean Clatworthy's deploy script: https://github.com/deanc/wordpress-plugin-git-svn
 
+set -euo pipefail
+
 # main config
-PLUGINSLUG="pixelines-email-protector"
+PLUGINSLUG="pixeline-email-protector"
 CURRENTDIR=`pwd`
 # this should be the name of your main php file in the wordpress plugin
 MAINFILE="pixeline-email-protector.php" 
@@ -18,7 +20,7 @@ GITPATH="$CURRENTDIR/"
 SVNPATH="/tmp/$PLUGINSLUG" 
 
 # Remote SVN repo on wordpress.org, with trailing slash
-SVNURL="http://plugins.svn.wordpress.org/$PLUGINSLUG/" 
+SVNURL="https://plugins.svn.wordpress.org/$PLUGINSLUG/" 
 # your svn username
 SVNUSER="pixeline"
 
@@ -38,7 +40,7 @@ if ! which svn >/dev/null; then
 fi
 
 # cleanup last deploy
-rm -fr $SVNPATH/
+rm -fr "$SVNPATH/"
 
 # Check version in readme.txt is the same as plugin file after translating both to unix line breaks to work around grep's failure to identify mac line breaks
 NEWVERSION1=`grep "^Stable tag:" $GITPATH/readme.txt | awk -F' ' '{print $NF}'`
@@ -58,7 +60,13 @@ echo "Versions match in readme.txt and $MAINFILE. Let's proceed..."
 # 		echo "Git version does not exist. Let's proceed..."
 # fi
 
-cd $GITPATH
+cd "$GITPATH"
+CURRENT_BRANCH=$(git branch --show-current)
+if [ "$CURRENT_BRANCH" != "master" ]; then
+	echo "Current git branch is '$CURRENT_BRANCH'. Deploy must run from 'master'. Exiting...."
+	exit 1
+fi
+
 echo -e "Enter a commit message for this new version: \c"
 read COMMITMSG
 git commit -am "$COMMITMSG"
@@ -72,13 +80,18 @@ git push origin master --tags
 
 echo 
 echo "Creating local copy of SVN repo ..."
-svn co $SVNURL $SVNPATH
+svn co "$SVNURL" "$SVNPATH"
 
 echo "Clearing svn repo so we can overwrite it"
-svn rm $SVNPATH/trunk/*
+svn rm "$SVNPATH"/trunk/*
 
 echo "Exporting the HEAD of master from git to the trunk of SVN"
-git checkout-index -a -f --prefix=$SVNPATH/trunk/
+git checkout-index -a -f --prefix="$SVNPATH"/trunk/
+
+if [ ! -f "$SVNPATH/trunk/readme.txt" ]; then
+	echo "Missing readme.txt in SVN trunk export. Exiting...."
+	exit 1
+fi
 
 echo "Ignoring github specific files and deployment script"
 svn propset svn:ignore "deploy.sh
@@ -87,30 +100,42 @@ README.md
 .gitignore" "$SVNPATH/trunk/"
 
 echo "Moving assets-wp-repo"
-mkdir $SVNPATH/assets/
-mv $SVNPATH/trunk/assets-wp-repo/* $SVNPATH/assets/
-svn add $SVNPATH/assets/
-svn delete $SVNPATH/trunk/assets-wp-repo
+mkdir "$SVNPATH"/assets/
+mv "$SVNPATH"/trunk/assets-wp-repo/* "$SVNPATH"/assets/
+svn add "$SVNPATH"/assets/
+svn delete "$SVNPATH"/trunk/assets-wp-repo
 
 
 echo "Changing directory to SVN and committing to trunk"
-cd $SVNPATH/trunk/
+cd "$SVNPATH"/trunk/
 # Add all new files that are not set to be ignored
 svn status | grep -v "^.[ \t]*\..*" | grep "^?" | awk '{print $2}' | xargs svn add
+
+if ! svn ls | grep -q '^readme\.txt$'; then
+	echo "SVN trunk is missing readme.txt after export/add. Exiting...."
+	exit 1
+fi
+
 echo "committing to trunk"
 svn commit --username=$SVNUSER -m "$COMMITMSG"
 
 echo "Updating WP plugin repo assets & committing"
-cd $SVNPATH/assets/
+cd "$SVNPATH"/assets/
 svn commit --username=$SVNUSER -m "Updating wp-repo-assets"
 
 echo "Creating new SVN tag & committing it"
-cd $SVNPATH
+cd "$SVNPATH"
 svn copy trunk/ tags/$NEWVERSION1/
-cd $SVNPATH/tags/$NEWVERSION1
+
+if ! svn ls "$SVNPATH/tags/$NEWVERSION1" | grep -q '^readme\.txt$'; then
+	echo "Tag source is missing readme.txt. Exiting...."
+	exit 1
+fi
+
+cd "$SVNPATH"/tags/"$NEWVERSION1"
 svn commit --username=$SVNUSER -m "Tagging version $NEWVERSION1"
 
 echo "Removing temporary directory $SVNPATH"
-rm -fr $SVNPATH/
+rm -fr "$SVNPATH/"
 
 echo "*** FIN ***"
