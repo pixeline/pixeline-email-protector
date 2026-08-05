@@ -118,10 +118,16 @@ README.md
 .gitignore" "$SVNPATH/trunk/"
 
 echo "Moving assets-wp-repo"
-mkdir "$SVNPATH"/assets/
-mv "$SVNPATH"/trunk/assets-wp-repo/* "$SVNPATH"/assets/
-svn add "$SVNPATH"/assets/
-svn delete "$SVNPATH"/trunk/assets-wp-repo
+mkdir -p "$SVNPATH"/assets/
+if [ -d "$SVNPATH/trunk/assets-wp-repo" ]; then
+	if compgen -G "$SVNPATH/trunk/assets-wp-repo/*" > /dev/null; then
+		mv "$SVNPATH"/trunk/assets-wp-repo/* "$SVNPATH"/assets/
+	fi
+	svn add --force "$SVNPATH"/assets/ >/dev/null 2>&1 || true
+	svn delete --force "$SVNPATH"/trunk/assets-wp-repo >/dev/null 2>&1 || true
+else
+	echo "No assets-wp-repo directory found in trunk export. Skipping asset move."
+fi
 
 
 echo "Changing directory to SVN and committing to trunk"
