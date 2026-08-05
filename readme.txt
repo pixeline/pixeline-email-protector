@@ -5,7 +5,7 @@ Plugin URI: https://pixeline.be/downloads/email-protector-plugin-for-wordpress-4
 Tags: email, spam, antispam, obfuscate, mailto
 Requires at least: 2.7
 Tested up to: 6.8.2
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -53,6 +53,12 @@ If you need to protect emails inside your Theme's files (like the footer.php for
 Github repo: https://github.com/pixeline/pixeline-email-protector
 
 == Changelog ==
+
+= 1.4.1 =
+- Fix: Prevent invalid HTML by replacing emails only in text nodes (never in tag attributes).
+- Fix: Improve mailto anchor cleanup to support single quotes, spacing variants, and uppercase attribute names.
+- Fix: Avoid duplicate frontend hook registration when calling safe_email().
+- JS: Make substitution marker parsing non-greedy to reduce edge-case reconstruction errors.
 
 = 1.4.0 =
 - Security: Fixed stored XSS vulnerability on the Settings page by sanitizing input and escaping output.

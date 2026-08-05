@@ -3,7 +3,7 @@
 Plugin Name: Email protector
 Plugin URI: https://pixeline.be
 Description: Obfuscate any email address published on the public face of a wordpress website, protecting them against spambots and email harvesters.
-Version: 1.4.0
+Version: 1.4.1
 Author: pixeline
 Author URI: https://pixeline.be
 License: GPLv2 or later
@@ -11,7 +11,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 if (!defined('EMAIL_PROTECTOR_VERSION')) {
-	define('EMAIL_PROTECTOR_VERSION', '1.4.0');
+	define('EMAIL_PROTECTOR_VERSION', '1.4.1');
 }
 
 if (!class_exists('WP_Email_Protector')) {
@@ -95,16 +95,55 @@ if (!class_exists('WP_Email_Protector')) {
 		{
 
 			// Removes <a href="mailto:" links sometimes added via copy/pasting into the visual editor
+			$anchor_pattern = '~<a\b[^>]*\bhref\s*=\s*(?:"mailto:([^"]*)"|\'mailto:([^\']*)\'|mailto:([^\s>]+))[^>]*>.*?</a>~is';
+			return preg_replace_callback(
+				$anchor_pattern,
+				function ($matches) {
+					$mailto_value = '';
+					for ($i = 1; $i <= 3; $i++) {
+						if (isset($matches[$i]) && $matches[$i] !== '') {
+							$mailto_value = $matches[$i];
+							break;
+						}
+					}
 
-			$r = '`\<a([^>]+)href\=\"mailto\:([^">]+)\"([^>]*)\>(.*?)\<\/a\>`ism';
-			preg_match_all($r, $content, $addresses, PREG_SET_ORDER);
-			$the_addrs = isset($addresses[0]) ? $addresses[0] : array();
-			$repaddr = array();
-			for ($a = 0; $a < count($the_addrs); $a++) {
-				$repaddr[$a] = preg_replace($r, '$2', $the_addrs[$a]);
+					if ($mailto_value === '') {
+						return $matches[0];
+					}
+
+					$mailto_value = wp_specialchars_decode($mailto_value, ENT_QUOTES);
+					$email = preg_replace('/\?.*$/', '', $mailto_value);
+
+					return $email;
+				},
+				$content
+			);
+		}
+
+
+		/**
+		 * Replace emails only in text nodes, never inside HTML tags/attributes.
+		 *
+		 * @param string   $content Full HTML content.
+		 * @param callable $replace_cb Callback used to replace plain-text email matches.
+		 * @return string
+		 */
+		function pep_replace_text_nodes($content, $replace_cb)
+		{
+			if (!function_exists('wp_html_split')) {
+				return preg_replace_callback('/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i', $replace_cb, $content);
 			}
-			$cc = str_replace($the_addrs, $repaddr, $content);
-			return $cc;
+
+			$chunks = wp_html_split($content);
+			foreach ($chunks as $index => $chunk) {
+				if ($chunk === '' || $chunk[0] === '<') {
+					continue;
+				}
+
+				$chunks[$index] = preg_replace_callback('/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i', $replace_cb, $chunk);
+			}
+
+			return implode('', $chunks);
 		}
 
 
@@ -117,10 +156,9 @@ if (!class_exists('WP_Email_Protector')) {
 			// ----------------------------------------------------------------------
 			// MAIN FUNCTION: replaces any email address by its harvest-proof counterpart.
 			// ----------------------------------------------------------------------
-			$addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i';
 			$substitution_string = isset($this->options['pep_email_substitution_string']) ? $this->options['pep_email_substitution_string'] : '';
-			$content = preg_replace_callback(
-				$addr_pattern,
+			$content = $this->pep_replace_text_nodes(
+				$content,
 				function ($matches) use ($substitution_string) {
 					$user_part   = isset($matches[1]) ? $matches[1] : '';
 					$domain_part = isset($matches[2]) ? $matches[2] : '';
@@ -129,8 +167,7 @@ if (!class_exists('WP_Email_Protector')) {
 					$visible_text = $user_part . '(' . $substitution_string . ')' . $domain_part . '.' . $tld_part;
 					$title_attr = $title_text !== '' ? ' title="' . esc_attr($title_text) . '"' : '';
 					return '<span class="pep-email"' . $title_attr . '>' . esc_html($visible_text) . '</span>';
-				},
-				$content
+				}
 			);
 			return $content;
 		}
@@ -145,9 +182,8 @@ if (!class_exists('WP_Email_Protector')) {
 			// ----------------------------------------------------------------------
 			// SECUNDARY FUNCTION: replaces any email address by its harvest-proof counterpart in the POST EXCERPT.
 			// ----------------------------------------------------------------------
-			$addr_pattern = '/([A-Z0-9._%+-]+)@([A-Z0-9.-]+)\.([A-Z]{2,63})(\((.+?)\))?/i';
-			$content = preg_replace_callback(
-				$addr_pattern,
+			$content = $this->pep_replace_text_nodes(
+				$content,
 				function ($matches) {
 					$display_text = '';
 					if (isset($matches[5]) && $matches[5] !== '') {
@@ -156,8 +192,7 @@ if (!class_exists('WP_Email_Protector')) {
 						$display_text = isset($matches[1]) ? $matches[1] : '';
 					}
 					return esc_html($display_text);
-				},
-				$content
+				}
 			);
 			return $content;
 		}
@@ -273,7 +308,10 @@ if (!function_exists('safe_email')) {
 	// ex: echo safe_email('hello@boby.com');
 	function safe_email($email)
 	{
-		$p_email_protector_var = new WP_Email_Protector();
+		global $p_email_protector_var;
+		if (!($p_email_protector_var instanceof WP_Email_Protector)) {
+			$p_email_protector_var = new WP_Email_Protector();
+		}
 		return $p_email_protector_var->email_protect($email);
 	}
 }

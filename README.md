@@ -52,7 +52,24 @@ If you need to protect emails inside your Theme's files (like the footer.php for
 
 ## Changelog
 
+### 1.4.1
+- Fix: Prevent invalid HTML by replacing emails only in text nodes (never in tag attributes).
+- Fix: Improve mailto anchor cleanup to support single quotes, spacing variants, and uppercase attribute names.
+- Fix: Avoid duplicate frontend hook registration when calling safe_email().
+- JS: Make substitution marker parsing non-greedy to reduce edge-case reconstruction errors.
+
 ### 1.4.0
+- Security: Fixed stored XSS vulnerability on the Settings page by sanitizing input and escaping output.
+- Security: Escaped frontend-generated markup (title and visible text) and used safe DOM APIs.
+- Admin: Migrated options to the WordPress Settings API.
+- Admin: Changed settings page capability to manage_options.
+- JS: Rewrote frontend manipulation to use createElement/textContent instead of insertAdjacentHTML.
+- Meta: Updated "Tested up to" to 6.8.2 and plugin version to 1.4.0.
+- I18n: Load text domain via load_plugin_textdomain on plugins_loaded.
+- Widgets: Remove non-existent widget_content; add widget_text_content filter.
+- Options: Add whitelist and 64-char length cap to substitution string.
+- Performance: Early exit in content filters when no '@' present.
+- Assets: Use filemtime-based versioning for the enqueued JS.
 
 ### 1.3.0
 - Extensive rewrite.
