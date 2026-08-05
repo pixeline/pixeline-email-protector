@@ -100,8 +100,8 @@ echo
 echo "Creating local copy of SVN repo ..."
 svn co "$SVNURL" "$SVNPATH"
 
-echo "Clearing svn repo so we can overwrite it"
-svn rm "$SVNPATH"/trunk/*
+echo "Clearing SVN trunk working files (keeping .svn metadata)"
+find "$SVNPATH/trunk" -mindepth 1 -maxdepth 1 ! -name '.svn' -exec rm -rf {} +
 
 echo "Exporting the HEAD of master from git to the trunk of SVN"
 git checkout-index -a -f --prefix="$SVNPATH"/trunk/
@@ -132,14 +132,27 @@ fi
 
 echo "Changing directory to SVN and committing to trunk"
 cd "$SVNPATH"/trunk/
-# Add all new files that are not set to be ignored
+# Sync SVN metadata with filesystem state
+# Add unversioned files
 while IFS= read -r file_path; do
 	[ -n "$file_path" ] || continue
 	svn add "$file_path"
 done < <(svn status | awk '/^\?/ && $2 !~ /^\./ {print $2}')
 
+# Remove versioned files that are now missing from the working tree
+while IFS= read -r file_path; do
+	[ -n "$file_path" ] || continue
+	svn rm --force "$file_path"
+done < <(svn status | awk '/^!/ {print $2}')
+
 if ! svn ls | grep -q '^readme\.txt$'; then
 	echo "SVN trunk is missing readme.txt after export/add. Exiting...."
+	exit 1
+fi
+
+readme_status=$(svn status readme.txt || true)
+if echo "$readme_status" | grep -Eq '^[D!]'; then
+	echo "readme.txt is scheduled for deletion or missing in SVN trunk. Exiting...."
 	exit 1
 fi
 
