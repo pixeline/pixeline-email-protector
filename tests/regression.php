@@ -100,4 +100,37 @@ assert_true(strpos($label_output, 'title="John Doe"') !== false, 'Label in paren
 $safe_output = safe_email('john@doe.com');
 assert_true(strpos($safe_output, 'class="pep-email"') !== false, 'safe_email() should return plugin markup.');
 
+// mailto anchors: an autolink is still discarded, a labelled link is now kept.
+
+$autolink = $plugin->email_protect('<p>Write to <a href="mailto:john@doe.com">john@doe.com</a> today.</p>');
+assert_true(strpos($autolink, '<span class="pep-email">john(') !== false, 'Autolinked address should become a protected span.');
+assert_true(strpos($autolink, '<a ') === false, 'Autolink anchor should be discarded.');
+
+$shouting = $plugin->email_protect('<a href="mailto:john@doe.com">JOHN@DOE.COM</a>');
+assert_true(strpos($shouting, '<a ') === false, 'Autolink should be recognised whatever its case.');
+
+$button = $plugin->email_protect('<a class="btn-primary" target="_blank" href="mailto:john@doe.com">Get in touch</a>');
+assert_true(strpos($button, 'class="btn-primary"') !== false, 'Labelled anchor should keep its classes.');
+assert_true(strpos($button, 'target="_blank"') !== false, 'Labelled anchor should keep its other attributes.');
+assert_true(strpos($button, '>Get in touch</a>') !== false, 'Labelled anchor should keep its visible text.');
+assert_true(strpos($button, 'data-pep-email="john(') !== false, 'Labelled anchor should carry the obfuscated address.');
+assert_true(strpos($button, 'mailto:john@doe.com') === false, 'Labelled anchor should not leak the address.');
+assert_true(strpos($button, 'john@doe.com') === false, 'No readable address should survive anywhere in the markup.');
+
+$with_subject = $plugin->email_protect('<a class="btn" href="mailto:john@doe.com?subject=Hello there">Mail us</a>');
+assert_true(strpos($with_subject, '?subject=Hello there"') !== false, 'A mailto query should be carried over untouched.');
+
+$nested = $plugin->email_protect('<a class="btn" href="mailto:john@doe.com"><span>Get <b>in</b> touch</span></a>');
+assert_true(strpos($nested, '<span>Get <b>in</b> touch</span></a>') !== false, 'Markup inside the label should survive.');
+
+$single_quoted = $plugin->email_protect("<a class='btn' href='mailto:john@doe.com'>Get in touch</a>");
+assert_true(strpos($single_quoted, 'data-pep-email="john(') !== false, 'Single-quoted href should be handled too.');
+
+$address_in_label = $plugin->email_protect('<a class="btn" href="mailto:john@doe.com">Write to john@doe.com</a>');
+assert_true(strpos($address_in_label, 'data-pep-email') === false, 'A label holding an address must not produce a nested anchor.');
+assert_true(strpos($address_in_label, '<span class="pep-email">john(') !== false, 'That case falls back to a protected span.');
+
+$untouched = $plugin->email_protect('<p><a href="/pricing">Pricing</a> and john@doe.com</p>');
+assert_true(strpos($untouched, '<a href="/pricing">Pricing</a>') !== false, 'Anchors without a mailto should be left alone.');
+
 echo "All regression tests passed.\n";

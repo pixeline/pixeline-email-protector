@@ -3,7 +3,7 @@
 Plugin Name: Email protector
 Plugin URI: https://pixeline.be
 Description: Obfuscate any email address published on the public face of a wordpress website, protecting them against spambots and email harvesters.
-Version: 1.4.3
+Version: 1.5.0
 Author: pixeline
 Author URI: https://pixeline.be
 License: GPLv2 or later
@@ -11,7 +11,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 if (!defined('EMAIL_PROTECTOR_VERSION')) {
-	define('EMAIL_PROTECTOR_VERSION', '1.4.3');
+	define('EMAIL_PROTECTOR_VERSION', '1.5.0');
 }
 
 if (!class_exists('WP_Email_Protector')) {
@@ -91,16 +91,61 @@ if (!class_exists('WP_Email_Protector')) {
 		}
 
 
+		/**
+		 * Obfuscate a full address the same way the visible replacement does.
+		 *
+		 * @param string $address Bare email address, without any ?subject= query.
+		 * @return string e.g. "john(Replace this parenthesis with the @ sign)doe.com"
+		 */
+		function pep_obfuscate_address($address)
+		{
+			$substitution_string = isset($this->options['pep_email_substitution_string'])
+				? $this->options['pep_email_substitution_string']
+				: '';
+
+			return str_replace('@', '(' . $substitution_string . ')', $address);
+		}
+
+
+		/**
+		 * Take mailto: anchors out of the harvesters' reach.
+		 *
+		 * Two very different things are written as a mailto anchor, and they need opposite
+		 * treatment:
+		 *
+		 *  - An autolink, whose visible text IS the address — what editors produce when an
+		 *    address is pasted into the visual editor. Nothing is lost by discarding it: the
+		 *    anchor is replaced by the bare address, which the main pass then turns into the
+		 *    usual protected <span>.
+		 *
+		 *  - A deliberate link, whose visible text is something else ("Get in touch"). Here
+		 *    the anchor carries the author's design — classes, target, rel, nested markup —
+		 *    and discarding it silently publishes a styled button as a raw address. Until
+		 *    1.4.3 that is exactly what happened. The anchor is now kept intact and only its
+		 *    href is taken away, the address riding along obfuscated in data-pep-email for
+		 *    the frontend script to restore.
+		 *
+		 * An address appearing inside the visible text falls back to the first branch: the
+		 * main pass would wrap it in a <span>, which the script turns into an <a>, and an
+		 * anchor nested in an anchor is not valid HTML.
+		 *
+		 * @param string $content Content being filtered.
+		 * @return string
+		 */
 		function pep_removeMailtoLink($content)
 		{
+			if (stripos($content, 'mailto:') === false) {
+				return $content;
+			}
 
-			// Removes <a href="mailto:" links sometimes added via copy/pasting into the visual editor
-			$anchor_pattern = '~<a\b[^>]*\bhref\s*=\s*(?:"mailto:([^"]*)"|\'mailto:([^\']*)\'|mailto:([^\s>]+))[^>]*>.*?</a>~is';
+			$anchor_pattern = '~<a\b([^>]*?)\bhref\s*=\s*(?:"mailto:([^"]*)"|\'mailto:([^\']*)\'|mailto:([^\s>]+))([^>]*)>(.*?)</a>~is';
+			$plugin = $this;
+
 			return preg_replace_callback(
 				$anchor_pattern,
-				function ($matches) {
+				function ($matches) use ($plugin) {
 					$mailto_value = '';
-					for ($i = 1; $i <= 3; $i++) {
+					for ($i = 2; $i <= 4; $i++) {
 						if (isset($matches[$i]) && $matches[$i] !== '') {
 							$mailto_value = $matches[$i];
 							break;
@@ -112,9 +157,30 @@ if (!class_exists('WP_Email_Protector')) {
 					}
 
 					$mailto_value = wp_specialchars_decode($mailto_value, ENT_QUOTES);
-					$email = preg_replace('/\?.*$/', '', $mailto_value);
 
-					return $email;
+					/* Only the part before ?subject=…&body=… is the address; the query is
+					   carried over untouched so the restored link still opens with it. */
+					$query_at = strpos($mailto_value, '?');
+					$email    = $query_at === false ? $mailto_value : substr($mailto_value, 0, $query_at);
+					$query    = $query_at === false ? '' : substr($mailto_value, $query_at);
+
+					$label = trim(strip_tags($matches[6]));
+
+					if (
+						$email === ''
+						|| $label === ''
+						|| strcasecmp($label, $email) === 0
+						|| strcasecmp($label, $mailto_value) === 0
+						|| preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}/i', $label)
+					) {
+						return $email;
+					}
+
+					$attributes = rtrim($matches[1]) . $matches[5];
+					$parked     = $plugin->pep_obfuscate_address($email) . $query;
+
+					return '<a' . $attributes . ' data-pep-email="' . esc_attr($parked) . '">'
+						. $matches[6] . '</a>';
 				},
 				$content
 			);

@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/pixelines-email-protector/
 Tags: email, spam, antispam, obfuscate, mailto
 Requires at least: 2.7
 Tested up to: 7.0.2
-Stable tag: 1.4.3
+Stable tag: 1.5.0
 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -43,6 +43,17 @@ Additionally, you can specify what the mailto: link should look like by sticking
 will become
 `<span class="pep-email" title="John Doe">John( replace these parenthesis by @ )doe.com</span>`.
 
+You can also write the link yourself, with whatever markup you like. An anchor whose
+visible text is not the address is kept exactly as you wrote it — classes, target, rel,
+nested markup and all — and only loses its href until the script hands it back:
+
+`<a class="btn" href="mailto:john@doe.com">Get in touch</a>`
+will become
+`<a class="btn" data-pep-email="john( replace these parenthesis by @ )doe.com">Get in touch</a>`.
+
+An anchor whose visible text IS the address — what editors produce when you paste one
+into the visual editor — is still replaced by the protected span above.
+
 = inside a theme =
 If you need to protect emails inside your Theme's files (like the footer.php for example), you can use the function safe_email() like this:
 
@@ -74,6 +85,19 @@ If your theme must keep working even when this plugin is disabled, use a wrapper
 Github repo: https://github.com/pixeline/pixeline-email-protector
 
 == Changelog ==
+= 1.5.0 =
+- Fix: keep deliberate mailto: links intact. Until now every <a href="mailto:…"> was
+  replaced by the bare address, so a designed link — one whose visible text is
+  "Get in touch" rather than the address — lost its text, classes and attributes and
+  was published as a raw address. Such anchors are now preserved; only the href is
+  withheld, the address riding along obfuscated in data-pep-email.
+- Autolinked addresses (visible text IS the address, as pasted into the visual editor)
+  are still replaced by the usual protected span, whatever their case.
+- A mailto ?subject=/?body= query is now carried over to the restored link.
+- JS: restore parked anchors in place, so the author’s markup is never rebuilt.
+- Tests: cover autolinks, labelled links, nested label markup, single-quoted hrefs,
+  queries, and a label that itself holds an address (which would nest anchors).
+
 = 1.4.3 =
 - Fix: avoid replacing email-like strings inside script/style/noscript/textarea/code/pre blocks.
 - Fix: keep plugin version constant in sync with plugin header.
