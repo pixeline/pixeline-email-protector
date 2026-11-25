@@ -3,7 +3,7 @@
 **Tags:** spam, email, address, harvest, obfuscate, protection, email protection, antispam, emailaddress, encode, encrypt, link, mailto, obfuscate, protect, spambot
 **Requires at least:** 2.7
 **Tested up to:** 7.0.2
-**Stable tag:** 1.5.0
+**Stable tag:** 1.5.1
 
 A WordPress plugin that lets your users write plain email addresses without worrying about spambots and email harvesters.
 
@@ -80,6 +80,11 @@ if ( ! function_exists( 'theme_safe_email' ) ) {
 
 
 ## Changelog
+
+### 1.5.1
+
+- Security: fix a stored cross-site scripting issue in the `mailto:` link handling (CVE-2026-136610), reachable through comments by unauthenticated visitors. An entity-encoded `mailto:` target was decoded and written to the page unescaped, and an `href=mailto:` written inside another attribute's value could turn the rest of that value into live attributes. The address is now escaped before it becomes page text, and anchors are read with a real attribute parser and rebuilt with every value re-escaped. A tag that cannot be read with certainty is left exactly as written. Please update.
+- Tests: cover both injection paths, in content and in excerpts.
 
 ### 1.5.0
 
