@@ -30,13 +30,14 @@ function wp_specialchars_decode($string, $quote_style = ENT_COMPAT)
 {
     return html_entity_decode($string, $quote_style, 'UTF-8');
 }
+// Like WordPress, the escapers leave entities that are already encoded alone.
 function esc_attr($text)
 {
-    return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8', false);
 }
 function esc_html($text)
 {
-    return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8', false);
 }
 function __($text, $domain = 'default')
 {
@@ -132,5 +133,67 @@ assert_true(strpos($address_in_label, '<span class="pep-email">john(') !== false
 
 $untouched = $plugin->email_protect('<p><a href="/pricing">Pricing</a> and john@doe.com</p>');
 assert_true(strpos($untouched, '<a href="/pricing">Pricing</a>') !== false, 'Anchors without a mailto should be left alone.');
+
+// Stored XSS (CVE-2026-136610). Each payload below is what kses lets through in a
+// comment from an unauthenticated visitor: only <a href title>, entities left encoded.
+
+/**
+ * True when the markup holds an element or attribute a browser would execute.
+ * Parsed as HTML, so text inside a quoted attribute value is not mistaken for markup.
+ */
+function has_live_script($html)
+{
+    $previous = libxml_use_internal_errors(true);
+    $dom = new DOMDocument();
+    $dom->loadHTML('<!DOCTYPE html><html><body>' . $html . '</body></html>');
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+
+    foreach ($dom->getElementsByTagName('*') as $element) {
+        if (in_array(strtolower($element->nodeName), array('script', 'img', 'svg', 'iframe'), true)) {
+            return true;
+        }
+        foreach ($element->attributes as $attribute) {
+            if (stripos($attribute->nodeName, 'on') === 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// The detector itself must see the payloads on the unpatched output shapes.
+assert_true(has_live_script('<img src=x onerror=alert(1)>'), 'Detector: live element.');
+assert_true(has_live_script('<a title=" href="x onmouseover=alert(1) y">Click</a>'), 'Detector: smuggled attribute.');
+assert_true(!has_live_script('<a href="x onmouseover=alert(1) y">Click</a>'), 'Detector: quoted text is inert.');
+
+// 1. Entity-encoded markup in the href was decoded, then returned raw.
+$decoded = $plugin->email_protect('<a href="mailto:&lt;img src=x onerror=alert(1)&gt;">john@doe.com</a>');
+assert_true(!has_live_script($decoded), 'An entity-encoded href must not be decoded into live markup: ' . $decoded);
+
+$decoded_empty = $plugin->email_protect('<a href="mailto:&lt;img src=x onerror=alert(1)&gt;@doe.com"></a>');
+assert_true(!has_live_script($decoded_empty), 'Same, for an anchor without a label: ' . $decoded_empty);
+
+// 2. A fake unquoted href inside another attribute's value swallowed a quote,
+//    turning the rest of that value into real attributes.
+$smuggled = $plugin->email_protect('<a title="href=mailto:john@doe.com" href="x onmouseover=alert(1) y">Click</a>');
+assert_true(!has_live_script($smuggled), 'Attribute text must never become attributes: ' . $smuggled);
+
+$smuggled_sq = $plugin->email_protect('<a title="href=\'mailto:john@doe.com" href="\' onmouseover=alert(1) ">Click</a>');
+assert_true(!has_live_script($smuggled_sq), 'Same, with a single-quoted fake href: ' . $smuggled_sq);
+
+// 3. The real href is the one that counts, not text that looks like one.
+$decoy = $plugin->email_protect('<a title="href=mailto:john@doe.com" href="/pricing">Pricing</a>');
+assert_true(strpos($decoy, 'href="/pricing"') !== false, 'An href-lookalike in a title must not hijack a normal link: ' . $decoy);
+assert_true(strpos($decoy, 'data-pep-email') === false, 'That link has no mailto to park.');
+
+// 4. Kept anchors are rebuilt with every attribute value escaped.
+$quoted_title = $plugin->email_protect('<a title=\'say "hi"\' href="mailto:john@doe.com">Get in touch</a>');
+assert_true(strpos($quoted_title, 'title="say &quot;hi&quot;"') !== false, 'Attribute values should be re-escaped: ' . $quoted_title);
+assert_true(!has_live_script($quoted_title), 'And stay inert.');
+
+// 5. The excerpt path shares the mailto handling.
+$excerpt = $plugin->email_protect_excerpt('<a href="mailto:&lt;script&gt;alert(1)&lt;/script&gt;">john@doe.com</a>');
+assert_true(!has_live_script($excerpt), 'Excerpts must not decode markup either: ' . $excerpt);
 
 echo "All regression tests passed.\n";

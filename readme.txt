@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/pixelines-email-protector/
 Tags: email, spam, antispam, obfuscate, mailto
 Requires at least: 2.7
 Tested up to: 7.0.2
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -85,6 +85,17 @@ If your theme must keep working even when this plugin is disabled, use a wrapper
 Github repo: https://github.com/pixeline/pixeline-email-protector
 
 == Changelog ==
+= 1.5.1 =
+- Security: fix a stored cross-site scripting issue in the mailto: link handling
+  (CVE-2026-136610), reachable through comments by unauthenticated visitors. An
+  entity-encoded mailto: target was decoded and written to the page unescaped, and an
+  "href=mailto:" written inside another attribute's value could turn the rest of that
+  value into live attributes. The address is now escaped before it becomes page text,
+  and anchors are read with a real attribute parser and rebuilt with every value
+  re-escaped. A tag that cannot be read with certainty is left exactly as written.
+  Please update.
+- Tests: cover both injection paths, in content and in excerpts.
+
 = 1.5.0 =
 - Fix: keep deliberate mailto: links intact. Until now every <a href="mailto:…"> was
   replaced by the bare address, so a designed link — one whose visible text is

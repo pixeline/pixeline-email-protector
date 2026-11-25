@@ -112,11 +112,17 @@ if [ ! -f "$SVNPATH/trunk/readme.txt" ]; then
 	exit 1
 fi
 
-echo "Ignoring github specific files and deployment script"
+echo "Ignoring github specific files, tests and deployment script"
 svn propset svn:ignore "deploy.sh
 README.md
+tests
 .git
 .gitignore" "$SVNPATH/trunk/"
+
+# svn:ignore only keeps unversioned files out. tests/ was shipped by earlier releases and is
+# still versioned in trunk, so drop it from the export too: the "missing files" pass below
+# then schedules it for deletion with svn rm.
+rm -rf "$SVNPATH/trunk/tests"
 
 echo "Moving assets-wp-repo"
 mkdir -p "$SVNPATH"/assets/
