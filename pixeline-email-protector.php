@@ -138,25 +138,46 @@ if (!class_exists('WP_Email_Protector')) {
 				return $content;
 			}
 
-			$anchor_pattern = '~<a\b([^>]*?)\bhref\s*=\s*(?:"mailto:([^"]*)"|\'mailto:([^\']*)\'|mailto:([^\s>]+))([^>]*)>(.*?)</a>~is';
+			/* The opening tag ends at its first ">", as kses (which cleaned this content
+			   when it was saved) reads it. Its attributes are then parsed properly rather
+			   than searched: an "href=mailto:" that sits inside another attribute's value
+			   is text, not the link's target. */
+			$anchor_pattern = '~<a\b([^>]*)>(.*?)</a>~is';
 			$plugin = $this;
 
 			return preg_replace_callback(
 				$anchor_pattern,
 				function ($matches) use ($plugin) {
-					$mailto_value = '';
-					for ($i = 2; $i <= 4; $i++) {
-						if (isset($matches[$i]) && $matches[$i] !== '') {
-							$mailto_value = $matches[$i];
+					$attributes = $plugin->pep_parse_attributes($matches[1]);
+
+					/* Markup that cannot be read with certainty is left exactly as it was
+					   written: rewriting it could change what a browser makes of it. */
+					if ($attributes === false) {
+						return $matches[0];
+					}
+
+					// Like a browser, only the first href counts.
+					$href = null;
+					foreach ($attributes as $attribute) {
+						if (strtolower($attribute['name']) === 'href') {
+							$href = $attribute['value'];
 							break;
 						}
 					}
 
-					if ($mailto_value === '') {
+					if ($href === null) {
 						return $matches[0];
 					}
 
-					$mailto_value = wp_specialchars_decode($mailto_value, ENT_QUOTES);
+					$href = trim(wp_specialchars_decode((string) $href, ENT_QUOTES));
+					if (stripos($href, 'mailto:') !== 0) {
+						return $matches[0];
+					}
+
+					$mailto_value = substr($href, strlen('mailto:'));
+					if ($mailto_value === '') {
+						return $matches[0];
+					}
 
 					/* Only the part before ?subject=…&body=… is the address; the query is
 					   carried over untouched so the restored link still opens with it. */
@@ -164,7 +185,7 @@ if (!class_exists('WP_Email_Protector')) {
 					$email    = $query_at === false ? $mailto_value : substr($mailto_value, 0, $query_at);
 					$query    = $query_at === false ? '' : substr($mailto_value, $query_at);
 
-					$label = trim(strip_tags($matches[6]));
+					$label = trim(strip_tags($matches[2]));
 
 					if (
 						$email === ''
@@ -173,17 +194,79 @@ if (!class_exists('WP_Email_Protector')) {
 						|| strcasecmp($label, $mailto_value) === 0
 						|| preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}/i', $label)
 					) {
-						return $email;
+						/* The address was decoded from an attribute and now becomes page
+						   text: it must be escaped, or "&lt;script&gt;" turns into a script. */
+						return esc_html($email);
 					}
 
-					$attributes = rtrim($matches[1]) . $matches[5];
-					$parked     = $plugin->pep_obfuscate_address($email) . $query;
+					// Rebuild the opening tag from the parsed attributes, each one re-escaped.
+					$tag = '<a';
+					foreach ($attributes as $attribute) {
+						$name = strtolower($attribute['name']);
+						if ($name === 'href' || $name === 'data-pep-email') {
+							continue;
+						}
+						$tag .= ' ' . $attribute['name'];
+						if ($attribute['value'] !== null) {
+							$tag .= '="' . esc_attr($attribute['value']) . '"';
+						}
+					}
 
-					return '<a' . $attributes . ' data-pep-email="' . esc_attr($parked) . '">'
-						. $matches[6] . '</a>';
+					$parked = $plugin->pep_obfuscate_address($email) . $query;
+
+					return $tag . ' data-pep-email="' . esc_attr($parked) . '">'
+						. $matches[2] . '</a>';
 				},
 				$content
 			);
+		}
+
+
+		/**
+		 * Read the attributes of an opening tag.
+		 *
+		 * Values are returned as written (entities still encoded), null for an attribute
+		 * without a value. Anything the parser cannot account for character by character —
+		 * a stray or unbalanced quote, an odd attribute name — makes it give up and return
+		 * false, so that the caller leaves the tag alone instead of guessing.
+		 *
+		 * @param string $attribute_string Everything between "<a" and ">".
+		 * @return array|false List of array('name' => string, 'value' => string|null).
+		 */
+		function pep_parse_attributes($attribute_string)
+		{
+			$attribute_pattern = '~\G\s+([A-Za-z_:][A-Za-z0-9_:.-]*)(?:\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s"\'=<>`]+)))?~';
+
+			$attributes = array();
+			$offset     = 0;
+			$length     = strlen($attribute_string);
+
+			while ($offset < $length) {
+				if (!preg_match($attribute_pattern, $attribute_string, $match, 0, $offset)) {
+					// Only trailing whitespace or a self-closing slash may be left over.
+					if (preg_match('~^\s*/?\s*$~', substr($attribute_string, $offset))) {
+						break;
+					}
+					return false;
+				}
+
+				$value = null;
+				for ($i = 2; $i <= 4; $i++) {
+					if (isset($match[$i]) && $match[$i] !== '') {
+						$value = $match[$i];
+						break;
+					}
+				}
+				// An explicitly empty value (title="") is still a value.
+				if ($value === null && strpos($match[0], '=') !== false) {
+					$value = '';
+				}
+
+				$attributes[] = array('name' => $match[1], 'value' => $value);
+				$offset += strlen($match[0]);
+			}
+
+			return $attributes;
 		}
 
 
